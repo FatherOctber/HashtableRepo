@@ -6,6 +6,7 @@ import (
 
 	"HashtableRepo/comm"
 	"HashtableRepo/hashtable"
+	"HashtableRepo/xmlrpc"
 )
 
 func main() {
@@ -13,7 +14,19 @@ func main() {
 
 	//testHashtable()
 
-	testComm()
+	//testComm()
+
+	testXMLRPC()
+}
+
+func testXMLRPC() {
+
+	args := os.Args[1:]
+	if len(args) > 0 {
+		xmlrpc.Create(args[0])
+	} else {
+		xmlrpc.Create("client")
+	}
 }
 
 func testComm() {
