@@ -1,7 +1,9 @@
 package hashtable
 
 import (
+	//"encoding/json"
 	"fmt"
+	"log"
 )
 
 type Pair struct {
@@ -48,6 +50,7 @@ func Put(pair Pair) string {
 
 	//fmt.Printf("Put pair: %+v\n", pair)
 	hashKey := hashcode(pair.key)
+	log.Printf("Capacity: %d, HashKey: %d\n", capacity, hashKey)
 	if hashKey < capacity {
 		for i := 0; i < len(table[hashKey]); i++ {
 			if table[hashKey][i].key == pair.key {
@@ -137,6 +140,33 @@ func Size() int {
 
 func Print() {
 	fmt.Printf("%+v\n", table)
+}
+
+func ToString() string {
+	/*fmt.Println("Call ToString")
+	jtable, err := json.Marshal(table)
+	if err != nil {
+		fmt.Println("Error:")
+		fmt.Println(err)
+		return ""
+	}
+
+	fmt.Printf("\nPrint string: %s", string(jtable))
+	return string(jtable)*/
+	var sTable string = "["
+
+	for i := range table {
+		sTable += " ["
+		for j := range table[i] {
+			sTable += "{" + string(table[i][j].key) + ", " + table[i][j].value + "} "
+		}
+
+		sTable += "]"
+	}
+
+	sTable += " ]"
+
+	return sTable
 }
 
 func hashcode(key int) int {
