@@ -2,17 +2,31 @@ package main
 
 import (
 	"fmt"
+	"os"
 
+	"HashtableRepo/comm"
 	"HashtableRepo/hashtable"
 )
 
 func main() {
 	fmt.Printf("Hashtable repository.\n")
 
-	test()
+	//testHashtable()
+
+	testComm()
 }
 
-func test() {
+func testComm() {
+
+	args := os.Args[1:]
+	if len(args) > 0 {
+		comm.Create(args[0])
+	} else {
+		comm.Create("client")
+	}
+}
+
+func testHashtable() {
 
 	var p hashtable.Pair
 
