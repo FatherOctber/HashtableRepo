@@ -32,7 +32,7 @@ func Create(isType string) {
 
 func server() {
 	//sem = make(chan bool, 0)
-	hashtable.Init(8)
+	hashtable.Init(4)
 
 	RPC := rpc.NewServer()
 	xmlrpcCodec := xml.NewCodec()

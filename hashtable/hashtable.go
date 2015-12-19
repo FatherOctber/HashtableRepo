@@ -59,6 +59,11 @@ func Put(pair Pair) string {
 
 		table[hashKey] = append(table[hashKey], pair)
 		size++
+
+		if float32(size) >= float32(capacity)*loadfactor {
+			expandTable()
+		}
+
 		return pair.value
 	}
 	return "null"
@@ -178,6 +183,24 @@ func Copy() [][]Pair {
 	}
 
 	return copyTable
+}
+
+func expandTable() {
+	var newTable [][]Pair
+	capacity *= 2
+
+	for i := 0; i < capacity; i++ {
+		newTable = append(newTable, []Pair{})
+	}
+
+	for i := 0; i < len(table); i++ {
+		for j := 0; j < len(table[i]); j++ {
+			hashKey := hashcode(table[i][j].key)
+			newTable[hashKey] = append(newTable[hashKey], table[i][j])
+		}
+	}
+
+	table = newTable
 }
 
 func hashcode(key int) int {
