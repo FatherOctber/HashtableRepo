@@ -142,7 +142,7 @@ func ToString() string {
 	for i := range table {
 		sTable += " ["
 		for j := range table[i] {
-			sTable += "{" + strconv.Itoa(table[i][j].key) + ", " + table[i][j].value + "} "
+			sTable += "{" + strconv.Itoa(table[i][j].key) + ", " + table[i][j].value + "}"
 		}
 
 		sTable += "]"

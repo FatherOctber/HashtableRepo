@@ -12,7 +12,13 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 )
+
+var mutex = &sync.Mutex{}
+
+//var sem chan bool
 
 func Create(isType string) {
 
@@ -24,6 +30,7 @@ func Create(isType string) {
 }
 
 func server() {
+	//sem = make(chan bool, 0)
 	hashtable.Init(8)
 
 	RPC := rpc.NewServer()
@@ -229,12 +236,14 @@ func (ms *MessageService) Clear(r *http.Request, args *struct {
 	Key   int
 	Value string
 }, reply *struct{ Message string }) error {
+	lock()
 	//log.Println("Call RPC clear")
 
 	isClear := strconv.FormatBool(hashtable.Clear())
 	//log.Println("Is clear hashtable: " + isClear)
 	reply.Message = isClear
 
+	unlock()
 	return nil
 }
 
@@ -242,6 +251,7 @@ func (ms *MessageService) Put(r *http.Request, args *struct {
 	Key   int
 	Value string
 }, reply *struct{ Message string }) error {
+	lock()
 	//log.Println("Call RPC put")
 
 	var p hashtable.Pair
@@ -251,6 +261,7 @@ func (ms *MessageService) Put(r *http.Request, args *struct {
 
 	reply.Message = val
 
+	unlock()
 	return nil
 }
 
@@ -331,6 +342,7 @@ func (ms *MessageService) Remove(r *http.Request, args *struct {
 	Key   int
 	Value string
 }, reply *struct{ Message string }) error {
+	lock()
 	//log.Println("Call RPC remove")
 
 	val := hashtable.Remove(args.Key)
@@ -339,6 +351,7 @@ func (ms *MessageService) Remove(r *http.Request, args *struct {
 
 	reply.Message = val
 
+	unlock()
 	return nil
 }
 
@@ -353,4 +366,18 @@ func (ms *MessageService) Size(r *http.Request, args *struct {
 	reply.Message = size
 
 	return nil
+}
+
+func lock() {
+
+	log.Println("Lock")
+	mutex.Lock()
+	//sem <- true
+}
+
+func unlock() {
+	time.Sleep(time.Second * 5)
+	log.Println("Unlock")
+	mutex.Unlock()
+	//<-sem
 }
