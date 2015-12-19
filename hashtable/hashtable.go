@@ -1,9 +1,8 @@
 package hashtable
 
 import (
-	//"encoding/json"
 	"fmt"
-	"log"
+	//"log"
 	"strconv"
 )
 
@@ -22,15 +21,6 @@ var size int = 0
 var loadfactor float32 = 0.75
 
 func Init(_capacity int) {
-
-	//fmt.Println("Call INIT")
-	/*
-		bucket1 := []Pair{Pair{1, "one"}, Pair{2, "two"}}
-		bucket2 := []Pair{Pair{5, "five"}, Pair{6, "six"}}
-
-		table = append(table, bucket1)
-		table = append(table, bucket2)
-	*/
 
 	capacity = _capacity
 	for i := 0; i < capacity; i++ {
@@ -53,7 +43,7 @@ func Put(pair Pair) string {
 
 	//fmt.Printf("Put pair: %+v\n", pair)
 	hashKey := hashcode(pair.key)
-	log.Printf("Capacity: %d, HashKey: %d\n", capacity, hashKey)
+	//log.Printf("Capacity: %d, HashKey: %d\n", capacity, hashKey)
 	if hashKey < capacity {
 		for i := 0; i < len(table[hashKey]); i++ {
 			if table[hashKey][i].key == pair.key {
@@ -71,7 +61,7 @@ func Put(pair Pair) string {
 		size++
 		return pair.value
 	}
-	return ""
+	return "null"
 }
 
 func Remove(key int) string {
@@ -102,7 +92,7 @@ func Get(key int) string {
 		}
 	}
 
-	return ""
+	return "null"
 }
 
 func ContainsKey(key int) bool {
@@ -146,16 +136,7 @@ func Print() {
 }
 
 func ToString() string {
-	/*fmt.Println("Call ToString")
-	jtable, err := json.Marshal(table)
-	if err != nil {
-		fmt.Println("Error:")
-		fmt.Println(err)
-		return ""
-	}
 
-	fmt.Printf("\nPrint string: %s", string(jtable))
-	return string(jtable)*/
 	var sTable string = "["
 
 	for i := range table {
