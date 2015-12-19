@@ -4,6 +4,7 @@ import (
 	//"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 )
 
 type Pair struct {
@@ -22,6 +23,7 @@ var loadfactor float32 = 0.75
 
 func Init(_capacity int) {
 
+	//fmt.Println("Call INIT")
 	/*
 		bucket1 := []Pair{Pair{1, "one"}, Pair{2, "two"}}
 		bucket2 := []Pair{Pair{5, "five"}, Pair{6, "six"}}
@@ -158,7 +160,7 @@ func ToString() string {
 	for i := range table {
 		sTable += " ["
 		for j := range table[i] {
-			sTable += "{" + string(table[i][j].key) + ", " + table[i][j].value + "} "
+			sTable += "{" + strconv.Itoa(table[i][j].key) + ", " + table[i][j].value + "} "
 		}
 
 		sTable += "]"
