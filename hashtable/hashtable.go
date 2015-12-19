@@ -153,6 +153,33 @@ func ToString() string {
 	return sTable
 }
 
+func Rollback(snapshot [][]Pair) bool {
+	table = snapshot
+	var curSize int = 0
+	capacity = len(table)
+
+	for i := 0; i < len(table); i++ {
+		curSize += len(table[i])
+	}
+	size = curSize
+
+	return true
+}
+
+func Copy() [][]Pair {
+	//return table
+	var copyTable [][]Pair
+
+	for i := 0; i < len(table); i++ {
+		copyTable = append(copyTable, []Pair{})
+		for j := 0; j < len(table[i]); j++ {
+			copyTable[i] = append(copyTable[i], table[i][j])
+		}
+	}
+
+	return copyTable
+}
+
 func hashcode(key int) int {
 
 	return key % capacity

@@ -17,6 +17,7 @@ import (
 )
 
 var mutex = &sync.Mutex{}
+var snapshot [][]hashtable.Pair
 
 //var sem chan bool
 
@@ -228,6 +229,21 @@ func executeCommand(cmd string) {
 
 		log.Printf("Response by \"toString\": %s\n", reply.Message)
 	}
+
+	if strings.HasPrefix(cmd, "rollback") {
+		foo := "Rollback"
+
+		reply, err := XmlRpcCall("MessageService."+foo, struct {
+			Key   int
+			Value string
+		}{0, "null"})
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Printf("Response by \"rollback\": %s\n", reply.Message)
+	}
 }
 
 type MessageService struct{}
@@ -239,6 +255,7 @@ func (ms *MessageService) Clear(r *http.Request, args *struct {
 	lock()
 	//log.Println("Call RPC clear")
 
+	snapshot = hashtable.Copy()
 	isClear := strconv.FormatBool(hashtable.Clear())
 	//log.Println("Is clear hashtable: " + isClear)
 	reply.Message = isClear
@@ -254,6 +271,7 @@ func (ms *MessageService) Put(r *http.Request, args *struct {
 	lock()
 	//log.Println("Call RPC put")
 
+	snapshot = hashtable.Copy()
 	var p hashtable.Pair
 	val := hashtable.Put(p.New(args.Key, args.Value))
 
@@ -345,6 +363,7 @@ func (ms *MessageService) Remove(r *http.Request, args *struct {
 	lock()
 	//log.Println("Call RPC remove")
 
+	snapshot = hashtable.Copy()
 	val := hashtable.Remove(args.Key)
 
 	//log.Println("Is remove from hashtable, value: " + val)
@@ -368,6 +387,21 @@ func (ms *MessageService) Size(r *http.Request, args *struct {
 	return nil
 }
 
+func (ms *MessageService) Rollback(r *http.Request, args *struct {
+	Key   int
+	Value string
+}, reply *struct{ Message string }) error {
+	lock()
+	//log.Println("Call RPC size")
+
+	isRollback := hashtable.Rollback(snapshot)
+	//log.Println("Size of hashtable: " + size)
+	reply.Message = strconv.FormatBool(isRollback)
+
+	unlock()
+	return nil
+}
+
 func lock() {
 
 	log.Println("Lock")
@@ -376,7 +410,7 @@ func lock() {
 }
 
 func unlock() {
-	time.Sleep(time.Second * 5)
+	time.Sleep(time.Second * 1)
 	log.Println("Unlock")
 	mutex.Unlock()
 	//<-sem
