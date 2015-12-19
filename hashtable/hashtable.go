@@ -43,6 +43,7 @@ func Clear() bool {
 		for i := 0; i < len(table); i++ {
 			table[i] = []Pair{}
 		}
+		size = 0
 	}
 	return true
 

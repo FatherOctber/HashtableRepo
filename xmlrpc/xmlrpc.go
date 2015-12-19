@@ -26,7 +26,8 @@ func Create(isType string) {
 
 type MessageService struct{}
 
-func (ms *MessageService) Print(r *http.Request, args *struct{ Who string }, reply *struct{ Message string }) error {
+/*
+func (ms *MessageService) Print(r *http.Request, args *rpcArgs, reply *rpcReply) error {
 	log.Println("Call RPC Print")
 	//hashtable.Print()
 
@@ -38,24 +39,140 @@ func (ms *MessageService) Print(r *http.Request, args *struct{ Who string }, rep
 	hashtable.Put(p.New(12, "twelve"))
 	hashtable.Put(p.New(49, "fourty-nine"))
 	hashtable.Put(p.New(33, "thirty-three"))
-	hashtable.Put(p.New(8, "eigth"))*/
+	hashtable.Put(p.New(8, "eigth"))
 
 	str := hashtable.ToString()
 	log.Println("Hashtable: " + str)
-	reply.Message = "Hello, " + args.Who + "!"
+	reply.Message = "Hello, " + args.Value + "!"
+	return nil
+}*/
+
+func (ms *MessageService) Clear(r *http.Request, args *struct {
+	Key   int
+	Value string
+}, reply *struct{ Message string }) error {
+	log.Println("Call RPC clear")
+
+	isClear := strconv.FormatBool(hashtable.Clear())
+	log.Println("Is clear hashtable: " + isClear)
+	reply.Message = isClear
+
 	return nil
 }
 
-func (ms *MessageService) clear(r *http.Request, args *struct{ temp string }, reply *struct{ Message string }) error {
-	log.Println("Call RPC clear")
+func (ms *MessageService) Put(r *http.Request, args *struct {
+	Key   int
+	Value string
+}, reply *struct{ Message string }) error {
+	log.Println("Call RPC put")
 
-	isClear := hashtable.Clear()
-	log.Println("Is clear hashtable: " + strconv.FormatBool(isClear))
-	if isClear {
-		reply.Message = "The hashtable cleaned"
-	} else {
-		reply.Message = "Unable to clean the table"
-	}
+	var p hashtable.Pair
+	val := hashtable.Put(p.New(args.Key, args.Value))
+
+	log.Println("Is put to hashtable, value: " + val)
+
+	reply.Message = val
+
+	return nil
+}
+
+func (ms *MessageService) ToString(r *http.Request, args *struct {
+	Key   int
+	Value string
+}, reply *struct{ Message string }) error {
+	log.Println("Call RPC toString")
+
+	str := hashtable.ToString()
+
+	log.Println("Is toString hashtable: " + str)
+
+	reply.Message = str
+
+	return nil
+}
+
+func (ms *MessageService) ContainsKey(r *http.Request, args *struct {
+	Key   int
+	Value string
+}, reply *struct{ Message string }) error {
+	log.Println("Call RPC containsKey")
+
+	isContains := strconv.FormatBool(hashtable.ContainsKey(args.Key))
+
+	log.Println("Is containsKey in hashtable: " + isContains)
+
+	reply.Message = isContains
+
+	return nil
+}
+
+func (ms *MessageService) ContainsValue(r *http.Request, args *struct {
+	Key   int
+	Value string
+}, reply *struct{ Message string }) error {
+	log.Println("Call RPC containsValue")
+
+	isContains := strconv.FormatBool(hashtable.ContainsValue(args.Value))
+
+	log.Println("Is containsValue in hashtable: " + isContains)
+
+	reply.Message = isContains
+
+	return nil
+}
+
+func (ms *MessageService) Get(r *http.Request, args *struct {
+	Key   int
+	Value string
+}, reply *struct{ Message string }) error {
+	log.Println("Call RPC get")
+
+	val := hashtable.Get(args.Key)
+
+	log.Println("Is get from hashtable, value: " + val)
+
+	reply.Message = val
+
+	return nil
+}
+
+func (ms *MessageService) IsEmpty(r *http.Request, args *struct {
+	Key   int
+	Value string
+}, reply *struct{ Message string }) error {
+	log.Println("Call RPC isEmpty")
+
+	isEmpty := strconv.FormatBool(hashtable.IsEmpty())
+	log.Println("Is empty hashtable: " + isEmpty)
+	reply.Message = isEmpty
+
+	return nil
+}
+
+func (ms *MessageService) Remove(r *http.Request, args *struct {
+	Key   int
+	Value string
+}, reply *struct{ Message string }) error {
+	log.Println("Call RPC remove")
+
+	val := hashtable.Remove(args.Key)
+
+	log.Println("Is remove from hashtable, value: " + val)
+
+	reply.Message = val
+
+	return nil
+}
+
+func (ms *MessageService) Size(r *http.Request, args *struct {
+	Key   int
+	Value string
+}, reply *struct{ Message string }) error {
+	log.Println("Call RPC size")
+
+	size := strconv.Itoa(hashtable.Size())
+	log.Println("Size of hashtable: " + size)
+	reply.Message = size
 
 	return nil
 }
@@ -73,7 +190,20 @@ func Server() {
 	log.Fatal(http.ListenAndServe(":8081", nil))
 }
 
-func XmlRpcCall(method string, args struct{ Who string }) (reply struct{ Message string }, err error) {
+/*
+type rpcArgs struct {
+	Key   int
+	Value string
+}
+
+type rpcReply struct {
+	Message string
+}*/
+
+func XmlRpcCall(method string, args struct {
+	Key   int
+	Value string
+},) (reply struct{ Message string }, err error) {
 
 	buf, _ := xml.EncodeClientRequest(method, &args)
 
@@ -97,6 +227,8 @@ func Client() {
 	for {
 		fmt.Print("Enter the command >: ")
 		cmd, _ := reader.ReadString('\n')
+
+		//cmd = cmd[:len(cmd)-1]
 
 		if cmd == "exit\n" {
 			break
@@ -128,104 +260,150 @@ func Client() {
 
 func executeCommand(cmd string) {
 
-	var foo string = ""
+	log.Println("Call executeCommand")
+	//var args rpcArgs
+	//var reply rpcReply
 	ob := strings.Index(cmd, "(")
 	cb := strings.Index(cmd, ")")
 
 	if strings.HasPrefix(cmd, "clear") {
-		foo = "clear"
+		foo := "Clear"
 
-		reply, err := XmlRpcCall("MessageService."+foo, struct{ Temp string }{"temp"})
+		reply, err := XmlRpcCall("MessageService."+foo, struct {
+			Key   int
+			Value string
+		}{0, "null"})
+
 		if err != nil {
 			log.Fatal(err)
 		}
+		log.Printf("Response by \"clear\": %s\n", reply.Message)
 	}
 
 	if strings.HasPrefix(cmd, "containsKey") {
-		foo = "containsKey"
-		key := cmd[ob+1 : cb]
-		//log.Println("Function: " + foo)
-		//log.Println("Key is: " + key)
+		foo := "ContainsKey"
 
-		reply, err := XmlRpcCall("MessageService."+foo, struct{ Key string }{key})
+		key, _ := strconv.Atoi(cmd[ob+1 : cb])
+
+		reply, err := XmlRpcCall("MessageService."+foo, struct {
+			Key   int
+			Value string
+		}{key, "null"})
+
 		if err != nil {
 			log.Fatal(err)
 		}
+		log.Printf("Response by \"containsKey\": %s\n", reply.Message)
 	}
 
 	if strings.HasPrefix(cmd, "containsValue") {
-		foo = "containsValue"
+		foo := "ContainsValue"
+
 		value := cmd[ob+1 : cb]
 
-		reply, err := XmlRpcCall("MessageService."+foo, struct{ Value string }{value})
+		reply, err := XmlRpcCall("MessageService."+foo, struct {
+			Key   int
+			Value string
+		}{0, value})
+
 		if err != nil {
 			log.Fatal(err)
 		}
+		log.Printf("Response by \"containsValue\": %s\n", reply.Message)
 	}
 
 	if strings.HasPrefix(cmd, "get") {
-		foo = "get"
-		key := cmd[ob+1 : cb]
+		foo := "Get"
+		key, _ := strconv.Atoi(cmd[ob+1 : cb])
 
-		reply, err := XmlRpcCall("MessageService."+foo, struct{ Key string }{key})
+		reply, err := XmlRpcCall("MessageService."+foo, struct {
+			Key   int
+			Value string
+		}{key, "null"})
+
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		log.Printf("Response by \"get\": %s\n", reply.Message)
 	}
 
 	if strings.HasPrefix(cmd, "isEmpty") {
-		foo = "isEmpty"
+		foo := "IsEmpty"
 
-		reply, err := XmlRpcCall("MessageService."+foo, struct{ Temp string }{"temp"})
+		reply, err := XmlRpcCall("MessageService."+foo, struct {
+			Key   int
+			Value string
+		}{0, "null"})
+
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		log.Printf("Response by \"isEmpty\": %s\n", reply.Message)
 	}
 
 	if strings.HasPrefix(cmd, "put") {
-		foo = "put"
+		foo := "Put"
 
 		comma := strings.Index(cmd, ",")
-		key := cmd[ob+1 : comma]
+		key, _ := strconv.Atoi(cmd[ob+1 : comma])
 		value := cmd[comma+2 : cb]
 
-		var p hashtable.Pair
+		reply, err := XmlRpcCall("MessageService."+foo, struct {
+			Key   int
+			Value string
+		}{key, value})
 
-		reply, err := XmlRpcCall("MessageService."+foo, struct{ pair Pair }{p.New(key, value)})
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		log.Printf("Response by \"put\": %s\n", reply.Message)
 	}
 
 	if strings.HasPrefix(cmd, "remove") {
-		foo = "remove"
-		key := cmd[ob+1 : cb]
+		foo := "Remove"
+		key, _ := strconv.Atoi(cmd[ob+1 : cb])
 
-		reply, err := XmlRpcCall("MessageService."+foo, struct{ Key string }{key})
+		reply, err := XmlRpcCall("MessageService."+foo, struct {
+			Key   int
+			Value string
+		}{key, "null"})
+
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		log.Printf("Response by \"remove\": %s\n", reply.Message)
 	}
 
 	if strings.HasPrefix(cmd, "size") {
-		foo = "size"
+		foo := "Size"
 
-		reply, err := XmlRpcCall("MessageService."+foo, struct{ Temp string }{"temp"})
+		reply, err := XmlRpcCall("MessageService."+foo, struct {
+			Key   int
+			Value string
+		}{0, "null"})
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		log.Printf("Response by \"size\": %s\n", reply.Message)
 	}
 
 	if strings.HasPrefix(cmd, "toString") {
-		foo = "toString"
+		foo := "ToString"
 
-		reply, err := XmlRpcCall("MessageService."+foo, struct{ Temp string }{"temp"})
+		reply, err := XmlRpcCall("MessageService."+foo, struct {
+			Key   int
+			Value string
+		}{0, "null"})
+
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		log.Printf("Response by \"toString\": %s\n", reply.Message)
 	}
-
-	log.Printf("Response: %s\n", reply.Message)
-
-	foo = ""
 }
